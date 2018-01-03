@@ -1,0 +1,43 @@
+diff --git rts/lib/lua/include/LuaUser.cpp rts/lib/lua/include/LuaUser.cpp
+index 0253e7455..8bd526f15 100644
+--- rts/lib/lua/include/LuaUser.cpp
++++ rts/lib/lua/include/LuaUser.cpp
+@@ -177,7 +177,8 @@ const char* spring_lua_getHandleName(lua_State* L)
+ ///////////////////////////////////////////////////////////////////////////
+ // Custom Memory Allocator
+ //
+-static constexpr uint32_t maxAllocedBytes = 768u * (1024u * 1024u);
++// static constexpr uint32_t maxAllocedBytes = 768u * (1024u * 1024u);
++static constexpr uint32_t maxAllocedBytes = 2048u * (1024u * 1024u);
+ static constexpr const char* maxAllocFmtStr = "[%s][handle=%s][OOM] synced=%d {alloced,maximum}={%u,%u}bytes\n";
+ 
+ // tracks allocations across all states
+@@ -201,6 +202,8 @@ void spring_lua_alloc_log_error(const luaContextData* lcd)
+ 	e.msgPtr += SNPRINTF(e.msgPtr, sizeof(e.msgBuf) - (e.msgPtr - &e.msgBuf[0]), fmt, __func__, lhn, lcd->synced, uint32_t(s.allocedBytes), maxAllocedBytes);
+ }
+ 
++static size_t mem_peak = 0;
++
+ void* spring_lua_alloc(void* ud, void* ptr, size_t osize, size_t nsize)
+ {
+ 	luaContextData* lcd = static_cast<luaContextData*>(ud);
+@@ -215,6 +218,19 @@ void* spring_lua_alloc(void* ud, void* ptr, size_t osize, size_t nsize)
+ 		return nullptr;
+ 	}
+ 
++    if (1) { // (nsize > osize) {
++        for (unsigned int i=0; i < 140; i++)
++        {
++            printf(" ");
++        }
++        printf("%lu MB", gLuaAllocState.allocedBytes.load() / (1024 * 1024));
++        if(mem_peak < gLuaAllocState.allocedBytes.load()){
++            mem_peak = gLuaAllocState.allocedBytes.load();
++        }
++        printf(" (%lu MB)", mem_peak / (1024 * 1024));
++        printf("\r");
++    }
++
+ 	if ((nsize > osize) && (gLuaAllocState.allocedBytes.load() > maxAllocedBytes)) {
+ 		// (re)allocation
+ 		// better kill Lua than whole engine; instant desync if synced handle
