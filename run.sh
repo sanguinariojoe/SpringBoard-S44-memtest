@@ -48,7 +48,7 @@ function clear_installation {
 # Start cloning all the required stuff
 mkdir -p "$EXE_PATH/download"
 checkout_repo "memtest-sb" "https://github.com/Spring-SpringBoard/SpringBoard-Core" "master"
-checkout_repo "memtest-s44" "https://github.com/spring1944/spring1944.git" "master"
+checkout_repo "memtest-s44" "https://gitlab.com/sanguinariojoe/spring1944.git" "104fixes"
 checkout_repo "memtest-spring-master" "https://github.com/spring/spring.git" "master"
 checkout_repo "memtest-spring-develop" "https://github.com/spring/spring.git" "develop"
 
